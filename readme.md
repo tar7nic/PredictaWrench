@@ -18,8 +18,6 @@ An end-to-end machine learning pipeline that predicts the **Remaining Useful Lif
 
 ## Screenshots
 
-> _Add screenshots here after running the dashboard_
-
 | Fleet Overview | Engine Deep Dive | Model Performance |
 |----------------|------------------|-------------------|
 | ![fleet](screenshots/fleet_overview.png) | ![dive](screenshots/engine_deep_dive.png) | ![model](screenshots/model_performance.png) |
