@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+pw/
+
+
+# Data files — raw txt files only (CSVs are generated)
+data/train_FD001.txt
+data/test_FD001.txt
+data/RUL_FD001.txt
+data/train_FD002.txt
+data/test_FD002.txt
+data/RUL_FD002.txt
+data/train_FD003.txt
+data/test_FD003.txt
+data/RUL_FD003.txt
+data/train_FD004.txt
+data/test_FD004.txt
+data/RUL_FD004.txt
+
+# Model binaries (optional — uncomment to exclude from repo)
+# models/*.pkl
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
+logs/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
