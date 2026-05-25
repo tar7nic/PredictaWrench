@@ -1,18 +1,22 @@
 # ⚙️ PredictaWrench — Predictive Maintenance Engine Health Monitor
 
-An end-to-end machine learning pipeline that predicts the **Remaining Useful Life (RUL)** of aircraft engines using NASA's CMAPSS sensor dataset, deployed as an industrial-grade Streamlit dashboard.
+An end-to-end machine learning pipeline that predicts the **Remaining Useful Life (RUL)** of aircraft engines using NASA's CMAPSS sensor dataset, deployed as an industrial-grade Streamlit dashboard. Includes a benchmarked LSTM experiment against the XGBoost production model.
 
 🚀 **[Live Demo → Click Here](https://predictawrench-tn019.streamlit.app)**
 
+---
+
 ## Key Results
 
-| Metric | Value |
-|--------|-------|
-| RMSE   | 19.25 cycles |
-| MAE    | 14.30 cycles |
-| R²     | 0.785 |
-| Engines Monitored | 100 |
-| Risk Classification | Critical / Warning / Healthy |
+| Metric | XGBoost | LSTM |
+|--------|---------|------|
+| RMSE   | 19.25 cycles | **16.71 cycles** |
+| MAE    | 14.30 cycles | **12.88 cycles** |
+| R²     | 0.785 | **0.838** |
+| Engines Monitored | 100 | 100 |
+| Risk Classification | Critical / Warning / Healthy | — |
+
+> **Note:** LSTM achieves stronger predictive accuracy on this dataset. XGBoost is retained as the production model in the dashboard due to its significantly faster inference (~40x), no sequence construction overhead, and simpler deployment footprint — a deliberate engineering tradeoff over raw metric performance.
 
 ---
 
@@ -41,13 +45,16 @@ predictawrench/
 │   ├── scaler.pkl               # Fitted StandardScaler
 │   ├── metrics.csv              # RMSE, MAE, R² scores
 │   ├── feature_importance.png   # Top 20 feature importance chart
-│   └── pred_vs_actual.png       # Predicted vs actual scatter plot
+│   ├── pred_vs_actual.png       # Predicted vs actual scatter plot
+│   └── model_comparison.png     # XGBoost vs LSTM benchmark visualization
+├── notebooks/
+│   └── lstm_experiment.ipynb    # Phase 3b — LSTM benchmark experiment
 ├── src/
 │   ├── data_loader.py           # Phase 1 — data ingestion & RUL labeling
 │   ├── feature_engineering.py   # Phase 2 — rolling features & preprocessing
 │   └── model.py                 # Phase 3 — training, evaluation, artifacts
 ├── app/
-│   └── streamlit_app.py         # Phase 4 — dashboard (or app.py at root)
+│   └── streamlit_app.py         # Phase 4 — dashboard
 ├── requirements.txt
 └── README.md
 ```
@@ -110,8 +117,11 @@ python src/data_loader.py
 # Step 2 — Feature engineering
 python src/feature_engineering.py
 
-# Step 3 — Train model and evaluate
+# Step 3 — Train XGBoost model and evaluate
 python src/model.py
+
+# Step 3b — Run LSTM benchmark experiment (optional)
+jupyter notebook notebooks/lstm_experiment.ipynb
 
 # Step 4 — Launch dashboard
 streamlit run app/streamlit_app.py
@@ -135,10 +145,17 @@ The dashboard will open at `http://localhost:8501`.
 - Clips RUL at 125 cycles (piecewise linear degradation assumption)
 - Outputs feature matrices saved to `data/`
 
-### Phase 3 — Model Training
+### Phase 3 — Model Training (XGBoost)
 - Trains XGBoost regressor on engineered features with StandardScaler
 - Evaluates on last observed cycle per engine (standard CMAPSS protocol)
 - Saves model, scaler, metrics, and diagnostic plots to `models/`
+
+### Phase 3b — LSTM Experiment
+- Builds sliding window sequences (window=30 cycles) from sensor time-series
+- Trains a 2-layer LSTM with Dropout using Keras with early stopping
+- Benchmarks against XGBoost on RMSE, MAE, R²
+- Generates `models/model_comparison.png` — metric bar charts, predicted vs actual curve, training loss curve
+- Conclusion: LSTM achieves better raw accuracy; XGBoost selected for production on inference speed and deployment simplicity
 
 ### Phase 4 — Dashboard
 - **Fleet Overview** — KPI cards, risk donut chart, RUL histogram, color-coded engine status table
@@ -153,7 +170,8 @@ The dashboard will open at `http://localhost:8501`.
 |-----------|---------|
 | Data processing | Pandas, NumPy |
 | Feature engineering | Pandas rolling windows |
-| Model | XGBoost |
+| Production model | XGBoost |
+| Experiment model | Keras (TensorFlow) LSTM |
 | Evaluation | Scikit-Learn |
 | Visualization | Plotly, Matplotlib, Seaborn |
 | Dashboard | Streamlit |
@@ -162,6 +180,8 @@ The dashboard will open at `http://localhost:8501`.
 ---
 
 ## Model Configuration
+
+### XGBoost (Production)
 
 | Parameter | Value |
 |-----------|-------|
@@ -173,6 +193,29 @@ The dashboard will open at `http://localhost:8501`.
 | RUL clip | 125 cycles |
 | Rolling window | 5 cycles |
 | Eval protocol | Last cycle per engine |
+
+### LSTM (Experiment)
+
+| Parameter | Value |
+|-----------|-------|
+| Architecture | 2-layer LSTM + Dropout |
+| Hidden units | 128 → 64 |
+| Sequence window | 30 cycles |
+| Optimizer | Adam (lr=0.001) |
+| Epochs | Up to 100 (early stopping) |
+| Batch size | 256 |
+
+---
+
+## Model Benchmark
+
+| Metric | XGBoost | LSTM | Winner |
+|--------|---------|------|--------|
+| RMSE | 19.25 | 16.71 | 🔵 LSTM |
+| MAE | 14.30 | 12.88 | 🔵 LSTM |
+| R² | 0.785 | 0.838 | 🔵 LSTM |
+| Inference speed | ~40x faster | Baseline | 🟠 XGBoost |
+| Deployment complexity | Low | High | 🟠 XGBoost |
 
 ---
 
